@@ -192,6 +192,7 @@ EventHub::EventHub(void) :
     mEpollFd = epoll_create(EPOLL_SIZE_HINT);
     LOG_ALWAYS_FATAL_IF(mEpollFd < 0, "Could not create epoll instance.  errno=%d", errno);
 
+    //inotify机制
     mINotifyFd = inotify_init();
     int result = inotify_add_watch(mINotifyFd, DEVICE_PATH, IN_DELETE | IN_CREATE);
     LOG_ALWAYS_FATAL_IF(result < 0, "Could not register INotify for %s.  errno=%d",
@@ -732,7 +733,7 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
         nsecs_t now = systemTime(SYSTEM_TIME_MONOTONIC);
 
         // Reopen input devices if needed.
-        if (mNeedToReopenDevices) {
+        if (mNeedToReopenDevices/*当有设备插拔时，会置为true*/) {
             mNeedToReopenDevices = false;
 
             ALOGI("Reopening all input devices due to a configuration change.");
@@ -759,7 +760,7 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
             }
         }
 
-        if (mNeedToScanDevices) {
+        if (mNeedToScanDevices/*默认为true,也就是第一次初始化时需要扫描所有设备*/) {
             mNeedToScanDevices = false;
             scanDevicesLocked();
             mNeedToSendFinishedDeviceScan = true;

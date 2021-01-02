@@ -281,7 +281,7 @@ void InputReader::loopOnce() {
         timeoutMillis = -1;
 
         uint32_t changes = mConfigurationChangesToRefresh;
-        if (changes) {
+        if (changes/* config是否有变化 */) {
             mConfigurationChangesToRefresh = 0;
             timeoutMillis = 0;
             refreshConfigurationLocked(changes);
@@ -931,7 +931,7 @@ InputReaderThread::~InputReaderThread() {
 
 bool InputReaderThread::threadLoop() {
     mReader->loopOnce();
-    return true;
+    return true;//返回true，说明当前线程循环执行threadLoop函数
 }
 
 
